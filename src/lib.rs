@@ -70,7 +70,7 @@ mod escrow {
                     self.requested_resource_vault.put(bucket_of_resource.take_non_fungible(*non_fungible_local_id));
                 },
             }
-            // Returns offered resource to the other party.
+            // Returns offered resource to the other party
             self.offered_resource.take_all()
         }
 
@@ -88,11 +88,12 @@ mod escrow {
             // Burn the EscrowBadge to indicate that the escrow is canceled
             escrow_nft.burn();
  
-            // Return the offered resource to the instantiator.
+            // Return the offered resource to the instantiator
+            // This ensures that the instantiator gets back their resources
             self.offered_resource.take_all()
         }
 
-        // Method to verify the provided NFT is the correct EscrowBadge.
+        // Method to verify the provided NFT is the correct EscrowBadge
         fn verify_escrow_badge(&self, escrow_nft: &NonFungibleBucket) {
             assert_eq!(escrow_nft.resource_address(), self.escrow_nft, "Invalid Escrow NFT");
             assert!(escrow_nft.amount() > 0.into(), "Empty Escrow NFT bucket");
