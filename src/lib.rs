@@ -1,5 +1,7 @@
 use scrypto::prelude::*;
 
+const MY_SCRYPTO101_TOKEN: ResourceAddress = ResourceAddress::from_str("resource_sim1qv9qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy36v6f").unwrap();
+
 #[blueprint]
 mod escrow {
     struct Escrow {
@@ -22,9 +24,9 @@ mod escrow {
             // Minting the EscrowBadge NFT which will be used to manage the escrow.
             let escrow_badge = ResourceBuilder::new_non_fungible()
                 .metadata("name", "Scrypto 101 Escrow Badge")
-                .mintable(rule!(require(RADIX_TOKEN)), LOCKED)
-                .burnable(rule!(require(RADIX_TOKEN)), LOCKED)
-                .updateable_non_fungible_data(rule!(require(RADIX_TOKEN)), LOCKED)
+                .mintable(rule!(require(MY_SCRYPTO101_TOKEN)), LOCKED)
+                .burnable(rule!(require(MY_SCRYPTO101_TOKEN)), LOCKED)
+                .updateable_non_fungible_data(rule!(require(MY_SCRYPTO101_TOKEN)), LOCKED)
                 .no_initial_supply();
 
             // Creating a unique badge ID and mint the badge with the offered resource information.
@@ -72,16 +74,28 @@ mod escrow {
             self.offered_resource.take_all()
         }
 
+        // Method allows the instantiator to withdraw their requested resource
         pub fn withdraw_resource(&mut self, escrow_nft: NonFungibleBucket) -> Bucket {
-
-            todo!();
-
+            // Verify the provided NFT is the correct EscrowBadge.
+            self.verify_escrow_badge(&escrow_nft);
+ 
+            // Returns the requested resource to the instantiator
+            self.requested_resource_vault.take_all()
         }
 
         pub fn cancel_escrow(&mut self, escrow_nft: NonFungibleBucket) -> Bucket {
+            self.verify_escrow_badge(&escrow_nft);
+            // Burn the EscrowBadge to indicate that the escrow is canceled
+            escrow_nft.burn();
+ 
+            // Return the offered resource to the instantiator.
+            self.offered_resource.take_all()
+        }
 
-            todo!();
-
+        // Method to verify the provided NFT is the correct EscrowBadge.
+        fn verify_escrow_badge(&self, escrow_nft: &NonFungibleBucket) {
+            assert_eq!(escrow_nft.resource_address(), self.escrow_nft, "Invalid Escrow NFT");
+            assert!(escrow_nft.amount() > 0.into(), "Empty Escrow NFT bucket");
         }
     }
 }
