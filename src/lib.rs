@@ -52,14 +52,16 @@ mod escrow {
                 ResourceSpecifier::Fungible { resource_address, amount } => {
                     // Provided resource need to match the requested resource address and amount
                     assert_eq!(bucket_of_resource.resource_address(), *resource_address, "Oooops wrong resource address");
+                    // Provided resource need to match the requested amount
                     assert!(bucket_of_resource.amount() >= *amount, "Insufficient amount of resource");
 
                     // Transfer the requested amount to the requested resource vault.
                     self.requested_resource_vault.put(bucket_of_resource.take(*amount));
                 },
                 ResourceSpecifier::NonFungible { resource_address, non_fungible_local_id } => {
-                    // Provided resource matches the requested resource address and ID
+                    // Provided resource matches the requested resource address 
                     assert_eq!(bucket_of_resource.resource_address(), *resource_address, "Oooops wrong resource address");
+                    // Provided resource matches the requested resource ID
                     assert!(bucket_of_resource.contains_non_fungible(*non_fungible_local_id), "Non-fungible ID not found");
 
                     // Transfer the requested non-fungible token to the requested resource vault.
